@@ -6,12 +6,12 @@ type BookmarkIconProps = {
 };
 
 export default function BookmarkIcon({ id }: BookmarkIconProps) {
-  const { bookmarkedIds, handleToogleBookmark } = useBookmarksContext();
-  console.log(bookmarkedIds);
+  const { bookmarkedIds, handleToggleBookmark } = useBookmarksContext();
+
   return (
     <button
       onClick={(e) => {
-        handleToogleBookmark(id);
+        handleToggleBookmark(id);
         e.stopPropagation();
         e.preventDefault();
       }}

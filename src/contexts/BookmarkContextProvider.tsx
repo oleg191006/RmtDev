@@ -1,41 +1,47 @@
 import { createContext } from "react";
+import { jobItemExtended } from "../lib/types/types";
 import { useLocalStorage } from "../lib/hooks/useLocalStorage";
+import useJobItems from "../lib/hooks/useJobItems";
 
 type BookmarksContext = {
   bookmarkedIds: number[];
-  handleToogleBookmark: (id: number) => void;
+  handleToggleBookmark: (id: number) => void;
+  bookmarkedJobItems: jobItemExtended[];
+  isLoading: boolean;
 };
 
-export const BookmarkContext = createContext<BookmarksContext | null>(null);
+export const BookmarksContext = createContext<BookmarksContext | null>(null);
 
-type BookmarkContextTypeProps = {
+export default function BookmarksContextProvider({
+  children,
+}: {
   children: React.ReactNode;
-};
-
-const BookmarkContetxtProvider = ({ children }: BookmarkContextTypeProps) => {
+}) {
   const [bookmarkedIds, setBookmarkedIds] = useLocalStorage<number[]>(
-    "bookmarksIds",
+    "bookmarkedIds",
     []
   );
+  const { jobItems: bookmarkedJobItems, isLoading } =
+    useJobItems(bookmarkedIds);
 
-  const handleToogleBookmark = (id: number) => {
+  const handleToggleBookmark = (id: number) => {
     if (bookmarkedIds.includes(id)) {
-      setBookmarkedIds((prev) => prev.filter((itemId) => itemId !== id));
+      setBookmarkedIds((prev) => prev.filter((item) => item !== id));
     } else {
       setBookmarkedIds((prev) => [...prev, id]);
     }
   };
 
   return (
-    <BookmarkContext.Provider
+    <BookmarksContext.Provider
       value={{
         bookmarkedIds,
-        handleToogleBookmark,
+        handleToggleBookmark,
+        bookmarkedJobItems,
+        isLoading,
       }}
     >
       {children}
-    </BookmarkContext.Provider>
+    </BookmarksContext.Provider>
   );
-};
-
-export default BookmarkContetxtProvider;
+}

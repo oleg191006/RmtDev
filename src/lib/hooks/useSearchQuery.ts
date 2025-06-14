@@ -1,17 +1,18 @@
 import { BASE_API_URL } from "../constants/constants";
 import { useQuery } from "@tanstack/react-query";
-import { jobItemExtended } from "../types/types";
+import { jobItem } from "../types/types";
 import { handleError } from "../utils/error";
 
-type JobItemApiResponse = {
+type JobItemsApiResponse = {
   public: boolean;
-  jobItem: jobItemExtended | null;
+  sorted: boolean;
+  jobItems: jobItem[];
 };
 
-export const fetchJobItem = async (
-  serchItemId: number
-): Promise<JobItemApiResponse> => {
-  const response = await fetch(`${BASE_API_URL}/:id/${serchItemId}`);
+const fetchJobItems = async (
+  searchText: string
+): Promise<JobItemsApiResponse> => {
+  const response = await fetch(`${BASE_API_URL}?search=${searchText}`);
   if (!response.ok) {
     const errorData = await response.json();
     throw new Error(errorData.description);
@@ -20,19 +21,19 @@ export const fetchJobItem = async (
   return data;
 };
 
-export default function useJobItem(serchItemId: number | null) {
+export default function useSearchQuery(searchText: string) {
   const { data, isInitialLoading } = useQuery(
-    ["job-item", serchItemId],
-    () => (serchItemId ? fetchJobItem(serchItemId) : null),
+    ["job-items", searchText],
+    () => fetchJobItems(searchText),
     {
       staleTime: 1000 * 60 * 5,
       refetchOnWindowFocus: false,
       retry: false,
-      enabled: !!serchItemId,
+      enabled: !!searchText,
       onError: handleError,
     }
   );
+  const jobItems = data ? data.jobItems : [];
   const isLoading = isInitialLoading;
-  const jobItem = data ? data.jobItem : null;
-  return [jobItem, isLoading] as const;
+  return { jobItems, isLoading } as const;
 }
